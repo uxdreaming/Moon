@@ -1,56 +1,55 @@
 # 🌕 Moon
 
-> A floating intelligence layer for Linux — always listening, always watching, never in the way.
-
-Moon is a minimal floating bubble that lives on your Linux desktop. Two modes, two hotkeys, zero friction.
-
----
-
-## Modes
-
-### 🎤 Dictate — `F5`
-Speak. Moon transcribes and pastes clean text directly into your active window.
-
-- Double `Ctrl Right` → start / stop recording
-- `AltGr` → pause / resume
-- Powered by Groq Whisper + LLM cleanup
-
-### ⚡ Full Sense — `F6`
-Point Moon at anything on your screen — a video, a meeting, a tutorial. It listens and watches simultaneously, then saves a structured note to Obsidian when you stop.
-
-- Draw a capture region with the grabber
-- Moon records system audio and takes screenshots in parallel
-- Output: transcription + visual analysis merged into a single Obsidian note
+**A silent observer that lives on your desktop.**  
+Moon floats over your workspace and captures what matters — your voice, your screen, your audio — without ever asking you to stop what you're doing.
 
 ---
 
-## Controls
+## Two modes. One bubble.
 
-| Key | Action |
-|-----|--------|
-| `F4` | Quit Moon |
-| `F5` | Dictate mode |
-| `F6` | Full Sense mode |
-| `F7` / `F8` | Reserved for future modes |
-| `Double Ctrl Right` | Start / stop recording (Dictate) |
+### 🎤 Dictate &nbsp;`Alt + F5`
+Talk. Moon transcribes your voice and pastes the cleaned result directly into whatever you're working on. No switching windows, no clicking record.
+
+- `Double Ctrl Right` — start / stop
+- `AltGr` — pause / resume
+
+### ⚡ Full Sense &nbsp;`Alt + F6`
+Draw a region around any video, meeting or tutorial. Moon listens to the system audio and watches the screen at the same time. When you stop, it saves a complete note to Obsidian — transcription and visual analysis together.
+
+- Draw a capture region over what you want Moon to watch
+- Runs silently in the background while you work elsewhere
+- One Obsidian note per session, automatically titled and tagged
+
+---
+
+## Hotkeys
+
+| Hotkey | Action |
+|--------|--------|
+| `F4` | Launch / kill Moon |
+| `Alt + F5` | Dictate mode |
+| `Alt + F6` | Full Sense mode |
+| `Double Ctrl Right` | Record / stop (Dictate) |
 | `AltGr` | Pause / resume (Dictate) |
 
 ---
 
 ## Stack
 
-- **PyQt6** — floating bubble UI
-- **Groq** — Whisper transcription + Llama text cleanup
-- **Google Gemini** — visual analysis (optional)
-- **sounddevice** — microphone input
-- **parec** — PipeWire/PulseAudio system audio capture
-- **pynput** — global hotkeys
-- **mss** — screen region capture
-- **Xlib** — X11 window management
+| | |
+|--|--|
+| **PyQt6** | Floating bubble UI |
+| **Groq** | Whisper transcription + Llama text cleanup |
+| **Google Gemini** | Visual frame analysis *(optional)* |
+| **sounddevice** | Microphone capture |
+| **parec** | System audio via PipeWire / PulseAudio |
+| **pynput** | Global hotkeys |
+| **mss** | Screen region capture |
+| **Xlib** | X11 window management |
 
 ---
 
-## Setup
+## Install
 
 ```bash
 git clone https://github.com/uxdreaming/Moon
@@ -60,38 +59,35 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Add your API keys to `~/.bashrc`:
+Add to `~/.bashrc`:
 
 ```bash
-export GROQ_API_KEY="your_key_here"
-export GEMINI_API_KEY="your_key_here"  # optional — enables visual analysis
+export GROQ_API_KEY="your_key"
+export GEMINI_API_KEY="your_key"   # optional
 ```
 
-Then run:
+Run:
 
 ```bash
 ./run.sh
 ```
 
-Or bind `F4` in your window manager to toggle Moon on and off.
-
 ---
 
 ## Qtile
 
-In your `config.py`:
+Bind `F4` to toggle Moon on and off:
 
 ```python
 Key([], "F4", lazy.spawn("/path/to/Moon/toggle.sh")),
-Key([], "F5", lazy.spawn("/path/to/Moon/toggle.sh")),
-Key([], "F6", lazy.spawn("/path/to/Moon/toggle.sh")),
 ```
 
 ---
 
 ## How notes work
 
-Full Sense captures are saved as **read-only archives** in Obsidian. If you want to build on a note, create a new one and link back to the original — the source is never touched.
+Full Sense sessions are saved as **read-only archives** in Obsidian.  
+If you want to build on a note, create a new one and link it back — the original is never modified.
 
 ---
 
