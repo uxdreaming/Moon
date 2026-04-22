@@ -10,14 +10,16 @@ Moon floats over your workspace and captures what matters — your voice, your s
 ### 🎤 Dictate &nbsp;`Alt + F5`
 Talk. Moon transcribes your voice and pastes the cleaned result directly into whatever you're working on. No switching windows, no clicking record.
 
-- `Double Ctrl Right` — start / stop
+- Double-tap `Right Ctrl` — start / stop
 - `AltGr` — pause / resume
+- Stops automatically after 10 seconds of silence
 
 ### ⚡ Full Sense &nbsp;`Alt + F6`
-Draw a region around any video, meeting or tutorial. Moon listens to the system audio and watches the screen at the same time. When you stop, it saves a complete note to Obsidian — transcription and visual analysis together.
+Draw a region around any video, meeting or tutorial. Moon listens to the system audio and watches the screen at the same time. When you stop, it saves a complete note to Obsidian — transcription and visual analysis combined.
 
 - Draw a capture region over what you want Moon to watch
 - Runs silently in the background while you work elsewhere
+- Stops automatically after 20 minutes of silence
 - One Obsidian note per session, automatically titled and tagged
 
 ---
@@ -29,7 +31,7 @@ Draw a region around any video, meeting or tutorial. Moon listens to the system 
 | `F4` | Launch / kill Moon |
 | `Alt + F5` | Dictate mode |
 | `Alt + F6` | Full Sense mode |
-| `Double Ctrl Right` | Record / stop (Dictate) |
+| Double-tap `Right Ctrl` | Start / stop recording (Dictate) |
 | `AltGr` | Pause / resume (Dictate) |
 
 ---
@@ -39,9 +41,11 @@ Draw a region around any video, meeting or tutorial. Moon listens to the system 
 | | |
 |--|--|
 | **PyQt6** | Floating bubble UI |
-| **Groq** | Whisper transcription + Llama text cleanup |
+| **Groq Whisper** `whisper-large-v3` | Audio transcription |
+| **Groq Llama** `llama-3.1-8b-instant` | Text cleanup and translation |
 | **Google Gemini** | Visual frame analysis *(optional)* |
-| **sounddevice** | Microphone capture |
+| **sounddevice** | Microphone input |
+| **soundfile** | Audio encoding |
 | **parec** | System audio via PipeWire / PulseAudio |
 | **pynput** | Global hotkeys |
 | **mss** | Screen region capture |
@@ -63,7 +67,7 @@ Add to `~/.bashrc`:
 
 ```bash
 export GROQ_API_KEY="your_key"
-export GEMINI_API_KEY="your_key"   # optional
+export GEMINI_API_KEY="your_key"   # optional — enables visual analysis
 ```
 
 Run:
