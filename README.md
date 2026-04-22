@@ -2,25 +2,25 @@
 
 > A floating intelligence layer for Linux — always listening, always watching, never in the way.
 
-Moon is a minimal floating bubble for Linux desktops that gives you two powerful capture modes, triggered by keyboard shortcuts, without ever breaking your flow.
+Moon is a minimal floating bubble that lives on your Linux desktop. Two modes, two hotkeys, zero friction.
 
 ---
 
 ## Modes
 
-### 🎤 Dictado — `F5`
-Speak. Moon transcribes and pastes the cleaned text directly into your active window.
+### 🎤 Dictate — `F5`
+Speak. Moon transcribes and pastes clean text directly into your active window.
 
 - Double `Ctrl Right` → start / stop recording
 - `AltGr` → pause / resume
-- Groq Whisper transcription + LLM cleanup
+- Powered by Groq Whisper + LLM cleanup
 
 ### ⚡ Full Sense — `F6`
-Moon watches and listens to whatever is on your screen — a video, a meeting, a tutorial — and saves a structured note to Obsidian automatically.
+Point Moon at anything on your screen — a video, a meeting, a tutorial. It listens and watches simultaneously, then saves a structured note to Obsidian when you stop.
 
-- Select a capture region with the grabber
-- Moon records system audio + screenshots in parallel
-- At the end: transcription + visual analysis merged into a single Obsidian note
+- Draw a capture region with the grabber
+- Moon records system audio and takes screenshots in parallel
+- Output: transcription + visual analysis merged into a single Obsidian note
 
 ---
 
@@ -28,21 +28,21 @@ Moon watches and listens to whatever is on your screen — a video, a meeting, a
 
 | Key | Action |
 |-----|--------|
-| `F4` | Kill Moon entirely |
-| `F5` | Toggle Dictado mode |
-| `F6` | Toggle Full Sense mode |
+| `F4` | Quit Moon |
+| `F5` | Dictate mode |
+| `F6` | Full Sense mode |
 | `F7` / `F8` | Reserved for future modes |
-| `Double Ctrl Right` | Record / Stop (Dictado) |
-| `AltGr` | Pause / Resume (Dictado) |
+| `Double Ctrl Right` | Start / stop recording (Dictate) |
+| `AltGr` | Pause / resume (Dictate) |
 
 ---
 
 ## Stack
 
 - **PyQt6** — floating bubble UI
-- **Groq** — Whisper transcription + Llama cleanup/translation
+- **Groq** — Whisper transcription + Llama text cleanup
 - **Google Gemini** — visual analysis (optional)
-- **sounddevice** — microphone capture
+- **sounddevice** — microphone input
 - **parec** — PipeWire/PulseAudio system audio capture
 - **pynput** — global hotkeys
 - **mss** — screen region capture
@@ -60,38 +60,38 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Set your API keys in `~/.bashrc`:
+Add your API keys to `~/.bashrc`:
 
 ```bash
 export GROQ_API_KEY="your_key_here"
-export GEMINI_API_KEY="your_key_here"  # optional, enables visual analysis
+export GEMINI_API_KEY="your_key_here"  # optional — enables visual analysis
 ```
 
-Run:
+Then run:
 
 ```bash
 ./run.sh
 ```
 
-Or bind `F4` in your window manager to toggle Moon on/off.
+Or bind `F4` in your window manager to toggle Moon on and off.
 
 ---
 
-## Qtile Integration
+## Qtile
 
 In your `config.py`:
 
 ```python
 Key([], "F4", lazy.spawn("/path/to/Moon/toggle.sh")),
-Key([], "F5", ...),
-Key([], "F6", ...),
+Key([], "F5", lazy.spawn("/path/to/Moon/toggle.sh")),
+Key([], "F6", lazy.spawn("/path/to/Moon/toggle.sh")),
 ```
 
 ---
 
-## Notes philosophy
+## How notes work
 
-Full Sense notes are **read-only archives** in Obsidian. If you derive content from a note, a new linked note is created — the original is never modified.
+Full Sense captures are saved as **read-only archives** in Obsidian. If you want to build on a note, create a new one and link back to the original — the source is never touched.
 
 ---
 
