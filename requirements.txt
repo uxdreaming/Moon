@@ -1,0 +1,6 @@
+faster-whisper
+sounddevice
+groq
+PyQt6
+numpy
+pynput

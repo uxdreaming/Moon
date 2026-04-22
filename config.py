@@ -1,0 +1,8 @@
+import os
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+WHISPER_MODEL = "small"
+WHISPER_LANGUAGE = "es"
+SAMPLE_RATE = 16000
+CHUNK_SECONDS = 30
