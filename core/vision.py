@@ -13,6 +13,15 @@ Tu tarea:
 
 Responde en el mismo idioma de la transcripción."""
 
+KEYWORD_PROMPT = """Analizá esta captura de pantalla y devolvé SOLO un keyword descriptivo de 3 a 5 palabras en inglés que describa el contenido principal visible.
+
+Reglas estrictas:
+- Solo devolvé el keyword, sin explicaciones ni puntuación
+- Usá Title Case
+- Separá las palabras con guiones medios (-)
+- Máximo 5 palabras
+- Ejemplos válidos: UI-Kit-Primary-Button, React-Hooks-useState, Typography-Scale-Heading, Color-System-Dark-Mode"""
+
 MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash-001"]
 
 

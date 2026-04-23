@@ -1,8 +1,23 @@
 import os
+import re
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-WHISPER_MODEL = "small"
-WHISPER_LANGUAGE = "es"
-SAMPLE_RATE = 16000
-CHUNK_SECONDS = 30
+
+def _read_key(name):
+    value = os.getenv(name, "")
+    if value:
+        return value
+    try:
+        with open(os.path.expanduser("~/.bashrc")) as f:
+            for line in f:
+                m = re.match(rf'^export {name}="([^"]+)"', line.strip())
+                if m:
+                    return m.group(1)
+    except Exception:
+        pass
+    return ""
+
+
+GROQ_API_KEY   = _read_key("GROQ_API_KEY")
+GEMINI_API_KEY = _read_key("GEMINI_API_KEY")
+SAMPLE_RATE    = 16000
+CHUNK_SECONDS  = 30

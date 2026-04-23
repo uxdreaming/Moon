@@ -121,5 +121,15 @@ class AudioRecorder:
                 return parts[1]
         return None
 
+    def is_mic_available(self):
+        try:
+            result = subprocess.run(
+                ['/usr/bin/pactl', 'list', 'sources', 'short'],
+                capture_output=True, text=True, timeout=2
+            )
+            return 'GM300' in result.stdout
+        except Exception:
+            return False
+
     def list_devices(self):
         print(sd.query_devices())

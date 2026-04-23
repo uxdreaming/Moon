@@ -19,6 +19,9 @@ class Transcriber:
             model="whisper-large-v3",
             file=buf,
             language="es",
-            response_format="text",
         )
-        return response.strip() if isinstance(response, str) else response.text.strip()
+        if isinstance(response, str):
+            return response.strip()
+        if hasattr(response, 'text'):
+            return response.text.strip()
+        return str(response).strip()
