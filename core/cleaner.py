@@ -1,18 +1,18 @@
 from groq import Groq
-from config import GROQ_API_KEY
+from config import GROQ_API_KEY, GLOSSARY_PATH
 
 TITLE_PROMPT = """Generá un título corto y descriptivo (máximo 6 palabras) para el siguiente texto.
 Solo devolvé el título, sin comillas, sin puntuación al final, sin explicaciones."""
 
-IMPROVE_PROMPT = """Eres un editor de texto profesional. Tu tarea es mejorar el texto que te den.
+IMPROVE_PROMPT = """Eres un corrector ortográfico y gramatical. Corrige únicamente errores concretos.
 
-Reglas:
-- Conserva todas las ideas del original
-- Mejora la redacción, claridad y fluidez
-- Corrige gramática y puntuación
-- Elimina muletillas y repeticiones
-- NUNCA cambies el significado
-- Devuelve solo el texto mejorado, sin explicaciones ni comillas"""
+Reglas absolutas:
+- Corrige solo: faltas de ortografía, palabras mal escritas, puntuación incorrecta, acuerdos gramaticales erróneos
+- NUNCA reemplaces una palabra correcta por un sinónimo
+- NUNCA agregues ni quites palabras
+- NUNCA reformules ni reestructures frases
+- Si el texto no tiene errores, devuélvelo exactamente igual
+- Devuelve solo el texto, sin explicaciones ni comillas"""
 
 TRANSLATE_PROMPT = """Eres un transcriptor y editor. Tu tarea es limpiar texto transcrito de audio del sistema.
 
@@ -65,13 +65,34 @@ class Cleaner:
     def __init__(self):
         self.client = Groq(api_key=GROQ_API_KEY)
 
+    def _load_glossary(self) -> list:
+        try:
+            with open(GLOSSARY_PATH, 'r') as f:
+                return [l.strip() for l in f if l.strip() and not l.startswith('#')]
+        except FileNotFoundError:
+            return []
+
+    def add_to_glossary(self, word: str):
+        word = word.strip()
+        if not word:
+            return
+        existing = self._load_glossary()
+        if any(e.lower() == word.lower() for e in existing):
+            return
+        with open(GLOSSARY_PATH, 'a') as f:
+            f.write(f"{word}\n")
+
     def clean(self, raw_text: str) -> str:
         if not raw_text.strip():
             return ""
+        words = self._load_glossary()
+        system = SYSTEM_PROMPT
+        if words:
+            system += "\n\nEstos términos deben escribirse exactamente como aparecen aquí:\n" + ", ".join(words)
         response = self.client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system},
                 {"role": "user", "content": f"Texto dictado a limpiar:\n{raw_text}"},
             ],
             temperature=0.2,

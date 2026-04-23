@@ -2,6 +2,7 @@ import os
 import re
 
 
+
 def _read_key(name):
     value = os.getenv(name, "")
     if value:
@@ -21,3 +22,4 @@ GROQ_API_KEY   = _read_key("GROQ_API_KEY")
 GEMINI_API_KEY = _read_key("GEMINI_API_KEY")
 SAMPLE_RATE    = 16000
 CHUNK_SECONDS  = 30
+GLOSSARY_PATH  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "glossary.txt")

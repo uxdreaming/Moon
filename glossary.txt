@@ -1,0 +1,3 @@
+# Moon — Glosario personal
+# Moon siempre escribe estos términos exactamente como aparecen aquí.
+# Una palabra o frase por línea. Las líneas con # son comentarios.

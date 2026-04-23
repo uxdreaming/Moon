@@ -43,20 +43,16 @@ def get_window_class(window_id):
 def _send_keys(window_id):
     time.sleep(0.4)
     wm_class = get_window_class(window_id) if window_id else ''
-    print(f"[Moon paste] window_id={window_id} wm_class='{wm_class}'")
     if wm_class in TERMINALS:
-        print("[Moon paste] sending Ctrl+Shift+V")
         with _kb.pressed(Key.ctrl):
             with _kb.pressed(Key.shift):
                 _kb.tap('v')
     else:
-        print("[Moon paste] sending Ctrl+V")
         with _kb.pressed(Key.ctrl):
             _kb.tap('v')
 
 
 def paste_to_window(window_id, text):
-    print(f"[Moon paste] text='{text[:60]}'")
     QApplication.clipboard().setText(" " + text)
     threading.Thread(target=_send_keys, args=(window_id,), daemon=True).start()
 
@@ -94,23 +90,22 @@ def main():
 
     bubble.signals.capture_focus.connect(on_capture_focus)
     bubble.signals.paste_ready.connect(on_paste_ready)
-    bubble.signals.improve_ready.connect(on_paste_ready)
 
-    _last_rctrl   = [0.0]
-    _last_menu    = [0.0]
-    DOUBLE_TAP_MS = 400
-    _alt_held     = [False]
-    _rctrl_held   = [False]
-    _menu_held    = [False]
+    _last_rctrl      = [0.0]
+    _last_menu       = [0.0]
+    DOUBLE_TAP_MS    = 400
+    _rctrl_held      = [False]
+    _menu_held       = [False]
+    _rctrl_tap_timer = [None]
+
+    def _fire_pause():
+        QTimer.singleShot(0, bubble.toggle_pause)
 
     def on_press(key):
         is_altgr = key in (keyboard.Key.alt_r, keyboard.Key.alt_gr) or getattr(key, 'vk', None) == 65027
 
         if is_altgr:
-            QTimer.singleShot(0, bubble.toggle_pause)
-
-        elif key == keyboard.Key.alt_l or key == keyboard.Key.alt:
-            _alt_held[0] = True
+            QTimer.singleShot(0, bubble.learn_word)
 
         elif key == keyboard.Key.ctrl_r:
             if _rctrl_held[0]:
@@ -119,10 +114,19 @@ def main():
             now = time.time() * 1000
             if now - _last_rctrl[0] < DOUBLE_TAP_MS:
                 _last_rctrl[0] = 0.0
+                if _rctrl_tap_timer[0]:
+                    _rctrl_tap_timer[0].cancel()
+                    _rctrl_tap_timer[0] = None
                 state['focused_window'] = get_focused_window_id()
                 QTimer.singleShot(0, bubble.toggle_recording)
             else:
                 _last_rctrl[0] = now
+                if _rctrl_tap_timer[0]:
+                    _rctrl_tap_timer[0].cancel()
+                t = threading.Timer(DOUBLE_TAP_MS / 1000, _fire_pause)
+                t.daemon = True
+                t.start()
+                _rctrl_tap_timer[0] = t
 
         elif key == keyboard.Key.menu:
             if _menu_held[0]:
@@ -136,9 +140,9 @@ def main():
                 _last_menu[0] = now
 
     def on_release(key):
-        if key in (keyboard.Key.alt_l, keyboard.Key.alt, keyboard.Key.alt_r, keyboard.Key.alt_gr) \
-                or getattr(key, 'vk', None) == 65027:
-            _alt_held[0] = False
+        is_altgr = key in (keyboard.Key.alt_r, keyboard.Key.alt_gr) or getattr(key, 'vk', None) == 65027
+        if is_altgr:
+            pass
         elif key == keyboard.Key.ctrl_r:
             _rctrl_held[0] = False
         elif key == keyboard.Key.menu:

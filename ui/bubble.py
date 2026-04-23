@@ -34,7 +34,7 @@ class WorkerSignals(QObject):
     result        = pyqtSignal(str)
     error         = pyqtSignal(str)
     paste_ready   = pyqtSignal(str)
-    improve_ready = pyqtSignal(str)
+    clipboard_ready = pyqtSignal(str)
     capture_focus = pyqtSignal()
 
 
@@ -45,6 +45,7 @@ class Bubble(QWidget):
     PROCESSING = "processing"
     RESULT     = "result"
     NO_MIC     = "no_mic"
+    LEARNING   = "learning"
 
     def __init__(self, recorder, transcriber, cleaner):
         super().__init__()
@@ -54,6 +55,7 @@ class Bubble(QWidget):
         self.signals     = WorkerSignals()
         self.signals.result.connect(self._on_result)
         self.signals.error.connect(self._on_error)
+        self.signals.clipboard_ready.connect(self._on_clipboard_ready)
         self._drag_pos    = QPoint()
         self._dot_count   = 0
         self._last_text   = ""
@@ -146,6 +148,12 @@ class Bubble(QWidget):
             self._border = QColor("#ff6b6b")
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
 
+        elif state == self.LEARNING:
+            self._show_learning()
+            self._border = QColor("#f59e0b")
+            self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+            self._pulse_timer.start(60)
+
         self.update()
 
     def _show_moon(self):
@@ -156,6 +164,11 @@ class Bubble(QWidget):
     def _show_no_mic(self):
         self._icon.setFont(QFont("Noto Color Emoji", 28))
         self._icon.setText("🎤")
+        self._icon.setStyleSheet("background: transparent; border: none;")
+
+    def _show_learning(self):
+        self._icon.setFont(QFont("Noto Color Emoji", 28))
+        self._icon.setText("✏️")
         self._icon.setStyleSheet("background: transparent; border: none;")
 
     def _show_recording(self):
@@ -204,6 +217,9 @@ class Bubble(QWidget):
         elif self.state == self.RECORDING:
             alpha = int(140 + 115 * self._pulse_value)
             painter.setPen(QPen(QColor(167, 139, 250, alpha), 4.0))
+        elif self.state == self.LEARNING:
+            alpha = int(140 + 115 * self._pulse_value)
+            painter.setPen(QPen(QColor(245, 158, 11, alpha), 4.0))
         else:
             painter.setPen(QPen(self._border, 4.0))
         path = QPainterPath()
@@ -239,7 +255,7 @@ class Bubble(QWidget):
 
     def _check_mic(self):
         available = self.recorder.is_mic_available()
-        if not available and self.state not in (self.RECORDING, self.PAUSED, self.PROCESSING):
+        if not available and self.state not in (self.RECORDING, self.PAUSED, self.PROCESSING, self.LEARNING):
             self._set_state(self.NO_MIC)
         elif available and self.state == self.NO_MIC:
             self._set_state(self.IDLE)
@@ -263,6 +279,15 @@ class Bubble(QWidget):
         if self.state in (self.RECORDING, self.PAUSED):
             self._gen += 1
             self._set_state(self.IDLE)
+            self.recorder.stop()
+
+    def learn_word(self):
+        if self.state == self.IDLE:
+            self._gen += 1
+            gen = self._gen
+            self._set_state(self.LEARNING)
+            threading.Thread(target=self._record_and_learn, args=(gen,), daemon=True).start()
+        elif self.state == self.LEARNING:
             self.recorder.stop()
 
     def toggle_pause(self):
@@ -292,9 +317,27 @@ class Bubble(QWidget):
     def _run_improve(self, text):
         try:
             improved = self.cleaner.improve(text)
-            self.signals.improve_ready.emit(improved)
+            self.signals.clipboard_ready.emit(improved)
         except Exception as e:
             self.signals.error.emit(str(e))
+
+    def _record_and_learn(self, gen):
+        try:
+            audio = self.recorder.record()
+            if gen != self._gen:
+                return
+            if audio.size == 0:
+                self.signals.result.emit("__empty__")
+                return
+            word = self.transcriber.transcribe(audio).strip()
+            if gen != self._gen:
+                return
+            if word:
+                self.cleaner.add_to_glossary(word)
+            self.signals.result.emit("__empty__")
+        except Exception as e:
+            if gen == self._gen:
+                self.signals.error.emit(str(e))
 
     def _record_and_process(self, gen):
         try:
@@ -331,6 +374,12 @@ class Bubble(QWidget):
         self._last_text = text
         self._set_state(self.IDLE)
         self.signals.paste_ready.emit(text)
+
+    def _on_clipboard_ready(self, text):
+        QApplication.clipboard().setText(text)
+        self._border = QColor("#5eead4")
+        self.update()
+        QTimer.singleShot(800, lambda: self._set_state(self.IDLE))
 
     def _on_error(self, error):
         print(f"[Moon error] {error}")
